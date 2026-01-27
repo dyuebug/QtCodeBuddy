@@ -52,6 +52,7 @@ private:
     void setupInputDemo(QWidget *parent);
     void setupDisplayDemo(QWidget *parent);
     void setupWindowDemo(QWidget *parent);
+    void updateWindowInfo();
     void connectSignals();
 
 private slots:

@@ -8,6 +8,7 @@
 #include <QTimer>
 #include <QApplication>
 #include <QScreen>
+#include <QDialog>
 
 WidgetsDemo::WidgetsDemo(QWidget *parent)
     : QWidget(parent)
@@ -274,7 +275,7 @@ void WidgetsDemo::connectSignals()
     connect(m_pushButton, &QPushButton::clicked, this, &WidgetsDemo::onOkButtonClicked);
     
     // 复选框和单选按钮
-    connect(m_checkBox, &QCheckBox::stateChanged, [this](int state) {
+    connect(m_checkBox, &QCheckBox::checkStateChanged, [this](Qt::CheckState state) {
         QString status = (state == Qt::Checked) ? "已选中" : "未选中";
         m_buttonResultLabel->setText(QString("复选框状态: %1").arg(status));
     });
@@ -317,9 +318,9 @@ void WidgetsDemo::onOkButtonClicked()
 {
     QString checkStatus = m_checkBox->isChecked() ? "已选中" : "未选中";
     QString radioText = m_radioBtn1->isChecked() ? "A" : "B";
-    
+
     m_buttonResultLabel->setText(QString("按钮被点击！\n复选框: %1\n单选: %2")
-        .arg(checkStatus).arg(radioText));
+        .arg(checkStatus, radioText));
 }
 
 /**
@@ -368,19 +369,20 @@ void WidgetsDemo::onProgressBarButtonClicked()
  */
 void WidgetsDemo::onOpenModalWindow()
 {
-    // 创建模态窗口
-    QWidget *modalDialog = new QWidget(this);
+    // 创建模态对话框（QDialog才有exec方法）
+    QDialog *modalDialog = new QDialog(this);
     modalDialog->setWindowTitle("模态窗口");
     modalDialog->setWindowModality(Qt::ApplicationModal);  // 设置为应用级模态
-    
+
     QVBoxLayout *layout = new QVBoxLayout(modalDialog);
     layout->addWidget(new QLabel("这是一个模态窗口\n你必须关闭它才能操作其他窗口"));
-    
+
     QPushButton *closeBtn = new QPushButton("关闭", modalDialog);
-    connect(closeBtn, &QPushButton::clicked, modalDialog, &QWidget::close);
+    connect(closeBtn, &QPushButton::clicked, modalDialog, &QDialog::accept);
     layout->addWidget(closeBtn);
-    
+
     modalDialog->exec();  // exec()会阻塞，直到窗口关闭
+    delete modalDialog;  // 关闭后手动删除
 }
 
 /**
