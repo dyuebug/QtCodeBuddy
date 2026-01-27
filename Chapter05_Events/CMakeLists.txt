@@ -1,38 +1,56 @@
-# 第5章：事件处理
-# 本章详细介绍Qt6的事件处理机制
+cmake_minimum_required(VERSION 3.5)
 
-cmake_minimum_required(VERSION 3.16)
+project(Chapter05_Events VERSION 1.0 LANGUAGES CXX)
 
-project(Chapter05_Events
-    VERSION 1.0
-    LANGUAGES CXX
-)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
-
-add_executable(Chapter05_Events
-    main.cpp
-    EventDemo.cpp
-    EventDemo.h
-    ClickLabel.h
-    ClickLabel.cpp
-    MouseTracker.h
-    MouseTracker.cpp
+set(PROJECT_SOURCES
+        main.cpp
+        EventDemo.cpp
+        EventDemo.h
+        ClickLabel.cpp
+        ClickLabel.h
+        MouseTracker.cpp
+        MouseTracker.h
 )
 
-target_link_libraries(Chapter05_Events PRIVATE
-    Qt6::Widgets
-)
-
-if(WIN32)
-    set_target_properties(Chapter05_Events PROPERTIES
-        WIN32_EXECUTABLE TRUE
+if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
+    qt_add_executable(Chapter05_Events
+        MANUAL_FINALIZATION
+        ${PROJECT_SOURCES}
     )
+else()
+    if(ANDROID)
+        add_library(Chapter05_Events SHARED
+            ${PROJECT_SOURCES}
+        )
+    else()
+        add_executable(Chapter05_Events
+            ${PROJECT_SOURCES}
+        )
+    endif()
+endif()
+
+target_link_libraries(Chapter05_Events PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+
+set_target_properties(Chapter05_Events PROPERTIES
+    MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
+    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    MACOSX_BUNDLE TRUE
+    WIN32_EXECUTABLE TRUE
+)
+
+if(QT_VERSION_MAJOR EQUAL 6)
+    qt_finalize_executable(Chapter05_Events)
 endif()
