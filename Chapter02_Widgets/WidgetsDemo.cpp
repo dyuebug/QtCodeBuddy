@@ -391,17 +391,19 @@ void WidgetsDemo::onOpenModalWindow()
 void WidgetsDemo::onOpenModelessWindow()
 {
     // 创建非模态窗口
-    QWidget *modelessDialog = new QWidget(this);
+    QWidget *modelessDialog = new QWidget();
     modelessDialog->setAttribute(Qt::WA_DeleteOnClose);  // 关闭时自动删除
+    modelessDialog->setWindowFlags(Qt::Window);  // 设置为独立窗口
     modelessDialog->setWindowTitle("非模态窗口");
-    
+    modelessDialog->resize(300, 150);
+
     QVBoxLayout *layout = new QVBoxLayout(modelessDialog);
     layout->addWidget(new QLabel("这是一个非模态窗口\n你可以同时操作其他窗口"));
-    
+
     QPushButton *closeBtn = new QPushButton("关闭", modelessDialog);
     connect(closeBtn, &QPushButton::clicked, modelessDialog, &QWidget::close);
     layout->addWidget(closeBtn);
-    
+
     modelessDialog->show();  // show()不会阻塞
 }
 
