@@ -220,27 +220,31 @@ void EventDemo::setupTimerEventDemo(QWidget *parent)
 void EventDemo::setupFocusEventDemo(QWidget *parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(parent);
-    
+
     QLabel *infoLabel = new QLabel(
         "点击不同的输入框，观察焦点变化。", parent
     );
     infoLabel->setWordWrap(true);
     infoLabel->setStyleSheet("background-color: #f3e5f5; padding: 10px; border-radius: 5px;");
     mainLayout->addWidget(infoLabel);
-    
+
     QGroupBox *editGroup = new QGroupBox("输入框", parent);
     QVBoxLayout *editLayout = new QVBoxLayout(editGroup);
-    
+
     m_focusEdit1 = new QLineEdit(editGroup);
     m_focusEdit1->setPlaceholderText("输入框 1");
+    // 安装事件过滤器以捕获焦点事件
+    m_focusEdit1->installEventFilter(this);
     editLayout->addWidget(m_focusEdit1);
-    
+
     m_focusEdit2 = new QLineEdit(editGroup);
     m_focusEdit2->setPlaceholderText("输入框 2");
+    // 安装事件过滤器以捕获焦点事件
+    m_focusEdit2->installEventFilter(this);
     editLayout->addWidget(m_focusEdit2);
-    
+
     mainLayout->addWidget(editGroup);
-    
+
     m_focusLabel = new QLabel("等待焦点事件...", parent);
     m_focusLabel->setAlignment(Qt::AlignCenter);
     m_focusLabel->setStyleSheet("padding: 15px; background-color: #e8f5e9; border-radius: 5px; font-size: 14px;");
@@ -530,6 +534,27 @@ bool EventDemo::eventFilter(QObject *watched, QEvent *event)
 
         // 让事件继续传递，以便QLineEdit正常处理
         return QWidget::eventFilter(watched, event);
+    }
+
+    // 处理焦点事件（用于焦点事件演示）
+    if ((watched == m_focusEdit1 || watched == m_focusEdit2)) {
+        if (event->type() == QEvent::FocusIn) {
+            QLineEdit *edit = qobject_cast<QLineEdit*>(watched);
+            if (edit) {
+                QString placeholder = edit->placeholderText();
+                m_focusLabel->setText(QString("获得焦点: %1").arg(placeholder));
+                addLog(QString("焦点事件: %1 获得焦点").arg(placeholder));
+            }
+            return QWidget::eventFilter(watched, event);
+        } else if (event->type() == QEvent::FocusOut) {
+            QLineEdit *edit = qobject_cast<QLineEdit*>(watched);
+            if (edit) {
+                QString placeholder = edit->placeholderText();
+                m_focusLabel->setText(QString("失去焦点: %1").arg(placeholder));
+                addLog(QString("焦点事件: %1 失去焦点").arg(placeholder));
+            }
+            return QWidget::eventFilter(watched, event);
+        }
     }
 
     // 过滤filteredEdit的键盘事件
