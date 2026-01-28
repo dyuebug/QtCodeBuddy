@@ -24,6 +24,7 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QLineEdit>
+#include <QTextEdit>
 #include <QSpinBox>
 #include <QCheckBox>
 #include <QGroupBox>
@@ -50,6 +51,9 @@ private:
     void setupNestedLayout(QWidget *parent);
     void setupStretchDemo(QWidget *parent);
     void connectSignals();
+
+    // 表单布局辅助函数
+    void resetForm();
 
     // 辅助函数：创建样式化的按钮
     QPushButton* createStyledButton(const QString &text);
@@ -78,6 +82,12 @@ private:
     
     // 表单布局演示部件
     QFormLayout *m_formLayout;
+    QLineEdit *m_formNameEdit;
+    QSpinBox *m_formAgeSpinBox;
+    QLineEdit *m_formEmailEdit;
+    QLineEdit *m_formAddressEdit;
+    QTextEdit *m_formRemarkEdit;
+    QCheckBox *m_formAgreeCheckBox;
     
     // 嵌套布局演示部件
     
@@ -85,6 +95,8 @@ private:
     QSlider *m_stretchSlider;
     QLabel *m_stretchLabel;
     QWidget *m_stretchDemoWidget;
+    QPushButton *m_stretchTopBtn;    // 顶部按钮
+    QPushButton *m_stretchBottomBtn;  // 底部按钮
     
     // 动态添加部件的计数
     int m_verticalButtonCount;

@@ -18,6 +18,12 @@ LayoutDemo::LayoutDemo(QWidget *parent)
     , m_hRemoveBtn(nullptr)
     , m_gridLayout(nullptr)
     , m_formLayout(nullptr)
+    , m_formNameEdit(nullptr)
+    , m_formAgeSpinBox(nullptr)
+    , m_formEmailEdit(nullptr)
+    , m_formAddressEdit(nullptr)
+    , m_formRemarkEdit(nullptr)
+    , m_formAgreeCheckBox(nullptr)
     , m_stretchSlider(nullptr)
     , m_stretchLabel(nullptr)
     , m_stretchDemoWidget(nullptr)
@@ -201,42 +207,53 @@ void LayoutDemo::setupGridLayout(QWidget *parent)
 
 /**
  * @brief 设置表单布局演示
- * 
+ *
  * QFormLayout专门用于表单界面
  * 自动管理标签和字段的成对排列
  */
 void LayoutDemo::setupFormLayout(QWidget *parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(parent);
-    
+
     QGroupBox *group = new QGroupBox("表单布局演示", parent);
     m_formLayout = new QFormLayout(group);
-    
+
     // 添加表单项（标签 + 部件）
-    m_formLayout->addRow("姓名：", new QLineEdit("张三"));
-    m_formLayout->addRow("年龄：", new QSpinBox());
-    m_formLayout->addRow("邮箱：", new QLineEdit());
-    m_formLayout->addRow("地址：", new QLineEdit());
-    
+    m_formNameEdit = new QLineEdit("张三");
+    m_formLayout->addRow("姓名：", m_formNameEdit);
+
+    m_formAgeSpinBox = new QSpinBox();
+    m_formAgeSpinBox->setRange(0, 120);
+    m_formLayout->addRow("年龄：", m_formAgeSpinBox);
+
+    m_formEmailEdit = new QLineEdit();
+    m_formLayout->addRow("邮箱：", m_formEmailEdit);
+
+    m_formAddressEdit = new QLineEdit();
+    m_formLayout->addRow("地址：", m_formAddressEdit);
+
     // 添加多行文本框
-    m_formLayout->addRow("备注：", new QTextEdit());
-    
-    // 添加复选框（标签为空字符串）
-    m_formLayout->addRow("", new QCheckBox("同意服务条款"));
-    
-    // 添加按钮（跨两列）
-    QHBoxLayout *btnLayout = new QHBoxLayout();
-    btnLayout->addWidget(new QPushButton("提交"));
-    btnLayout->addWidget(new QPushButton("重置"));
-    m_formLayout->addRow(btnLayout);
-    
+    m_formRemarkEdit = new QTextEdit();
+    m_formRemarkEdit->setMaximumHeight(60);
+    m_formLayout->addRow("备注：", m_formRemarkEdit);
+
+    // 添加复选框
+    m_formAgreeCheckBox = new QCheckBox("同意服务条款");
+    m_formLayout->addRow(m_formAgreeCheckBox);
+
+    // 添加按钮
+    QPushButton *submitBtn = new QPushButton("提交");
+    QPushButton *resetBtn = new QPushButton("重置");
+    connect(resetBtn, &QPushButton::clicked, this, &LayoutDemo::resetForm);
+    m_formLayout->addRow(submitBtn, resetBtn);
+
     // 设置表单布局属性
     m_formLayout->setSpacing(12);
     m_formLayout->setContentsMargins(20, 20, 20, 20);
     m_formLayout->setLabelAlignment(Qt::AlignRight);  // 标签右对齐
-    
+
     mainLayout->addWidget(group);
-    
+
     // 添加说明
     QLabel *infoLabel = new QLabel(
         "表单布局特点：\n"
@@ -304,49 +321,50 @@ void LayoutDemo::setupNestedLayout(QWidget *parent)
 
 /**
  * @brief 设置拉伸因子演示
- * 
+ *
  * 演示如何使用拉伸因子控制部件大小比例
  */
 void LayoutDemo::setupStretchDemo(QWidget *parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(parent);
-    
+
     // 控制区
     QGroupBox *controlGroup = new QGroupBox("拉伸控制", parent);
     QHBoxLayout *controlLayout = new QHBoxLayout(controlGroup);
-    
+
     controlLayout->addWidget(new QLabel("顶部拉伸因子:"));
     m_stretchSlider = new QSlider(Qt::Horizontal, parent);
     m_stretchSlider->setRange(1, 10);
     m_stretchSlider->setValue(1);
     controlLayout->addWidget(m_stretchSlider);
-    
+
     m_stretchLabel = new QLabel("1 : 1");
     controlLayout->addWidget(m_stretchLabel);
-    
+
     mainLayout->addWidget(controlGroup);
-    
+
     // 演示区
     m_stretchDemoWidget = new QWidget(parent);
-    QVBoxLayout *demoLayout = new QVBoxLayout(m_stretchDemoWidget);
-    
-    QPushButton *topBtn = new QPushButton("顶部区域");
-    topBtn->setStyleSheet("background-color: #87ceeb; padding: 30px; font-weight: bold;");
-    
-    QPushButton *bottomBtn = new QPushButton("底部区域");
-    bottomBtn->setStyleSheet("background-color: #ffa07a; padding: 30px; font-weight: bold;");
-    
-    // 设置初始拉伸因子
-    demoLayout->addWidget(topBtn, 1);    // 拉伸因子1
-    demoLayout->addWidget(bottomBtn, 1); // 拉伸因子1
-    
+
+    m_stretchTopBtn = new QPushButton("顶部区域", m_stretchDemoWidget);
+    m_stretchTopBtn->setStyleSheet("background-color: #87ceeb; padding: 30px; font-weight: bold;");
+    m_stretchTopBtn->setMinimumHeight(80);
+    m_stretchTopBtn->move(0, 0);
+    m_stretchTopBtn->resize(300, 80);
+
+    m_stretchBottomBtn = new QPushButton("底部区域", m_stretchDemoWidget);
+    m_stretchBottomBtn->setStyleSheet("background-color: #ffa07a; padding: 30px; font-weight: bold;");
+    m_stretchBottomBtn->setMinimumHeight(80);
+    m_stretchBottomBtn->move(0, 80);
+    m_stretchBottomBtn->resize(300, 80);
+
+    m_stretchDemoWidget->setMinimumHeight(200);
     m_stretchDemoWidget->setStyleSheet("border: 2px solid #333; border-radius: 5px;");
-    mainLayout->addWidget(m_stretchDemoWidget);
-    
+    mainLayout->addWidget(m_stretchDemoWidget, 1);
+
     // 添加说明
     QLabel *infoLabel = new QLabel(
         "拉伸因子（Stretch Factor）：\n"
-        "- 通过addWidget(widget, stretch)设置拉伸因子\n"
         "- 拉伸因子决定了部件在可用空间中的分配比例\n"
         "- 例如：stretch(1)和stretch(2)的比例是1:2\n"
         "- 滑动滑块查看不同拉伸比例的效果",
@@ -431,13 +449,31 @@ void LayoutDemo::onDynamicRemoveClicked()
 void LayoutDemo::onStretchChanged(int value)
 {
     m_stretchLabel->setText(QString("%1 : 1").arg(value));
-    
-    // 更新演示区的拉伸因子
-    QVBoxLayout *demoLayout = qobject_cast<QVBoxLayout*>(m_stretchDemoWidget->layout());
-    if (demoLayout && demoLayout->count() >= 2) {
-        demoLayout->setStretch(0, value);   // 顶部按钮拉伸因子
-        demoLayout->setStretch(1, 1);      // 底部按钮拉伸因子
+
+    // 直接调整按钮大小来模拟拉伸因子效果
+    int totalHeight = m_stretchDemoWidget->height();
+    if (totalHeight < 160) {
+        totalHeight = 160;  // 最小高度
     }
+
+    int topHeight = (totalHeight * value) / (value + 1);
+    int bottomHeight = totalHeight - topHeight;
+
+    m_stretchTopBtn->setGeometry(0, 0, m_stretchDemoWidget->width(), topHeight);
+    m_stretchBottomBtn->setGeometry(0, topHeight, m_stretchDemoWidget->width(), bottomHeight);
+}
+
+/**
+ * @brief 重置表单
+ */
+void LayoutDemo::resetForm()
+{
+    m_formNameEdit->clear();
+    m_formAgeSpinBox->setValue(0);
+    m_formEmailEdit->clear();
+    m_formAddressEdit->clear();
+    m_formRemarkEdit->clear();
+    m_formAgreeCheckBox->setChecked(false);
 }
 
 /**
