@@ -15,6 +15,12 @@
 #include <QTextDocument>
 #include <QTextCursor>
 #include <QTreeWidgetItem>
+#include <QApplication>
+#include <QCloseEvent>
+#include <QContextMenuEvent>
+#include <QVBoxLayout>
+#include <QPushButton>
+#include <QDialogButtonBox>
 
 MainWindowDemo::MainWindowDemo(QWidget *parent)
     : QMainWindow(parent)
@@ -444,12 +450,13 @@ void MainWindowDemo::onOpen()
     }
 }
 
-void MainWindowDemo::onSave()
+bool MainWindowDemo::onSave()
 {
     if (m_isUntitled) {
         onSaveAs();
+        return !m_isUntitled;  // 如果保存成功，返回true
     } else {
-        saveFile(m_currentFile);
+        return saveFile(m_currentFile);
     }
 }
 
@@ -528,6 +535,11 @@ void MainWindowDemo::onCopy()
 void MainWindowDemo::onPaste()
 {
     m_textEdit->paste();
+}
+
+void MainWindowDemo::onClear()
+{
+    m_textEdit->clear();
 }
 
 void MainWindowDemo::onSelectAll()
@@ -626,16 +638,44 @@ void MainWindowDemo::onSelectionChanged()
 bool MainWindowDemo::maybeSave()
 {
     if (m_textEdit->document()->isModified()) {
-        QMessageBox::StandardButton ret;
-        ret = QMessageBox::warning(this, tr("警告"), 
-            tr("文档已被修改。\n是否保存更改？"), 
-            QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-        
-        if (ret == QMessageBox::Save) {
-            return onSave();
-        } else if (ret == QMessageBox::Cancel) {
-            return false;
+        QDialog *dialog = new QDialog(this);
+        dialog->setWindowTitle(tr("警告"));
+        dialog->setModal(true);
+        dialog->resize(400, 150);
+
+        QVBoxLayout *layout = new QVBoxLayout(dialog);
+
+        QLabel *label = new QLabel(tr("文档已被修改。\n是否保存更改？"), dialog);
+        label->setWordWrap(true);
+        label->setAlignment(Qt::AlignCenter);
+        layout->addWidget(label);
+
+        QDialogButtonBox *buttonBox = new QDialogButtonBox(dialog);
+        QPushButton *saveBtn = buttonBox->addButton(tr("保存"), QDialogButtonBox::AcceptRole);
+        QPushButton *discardBtn = buttonBox->addButton(tr("不保存"), QDialogButtonBox::DestructiveRole);
+        buttonBox->addButton(tr("取消"), QDialogButtonBox::RejectRole);
+
+        // 连接信号来获取被点击的按钮
+        QPushButton *clickedButton = nullptr;
+        connect(buttonBox, &QDialogButtonBox::clicked, [&](QAbstractButton *button) {
+            clickedButton = qobject_cast<QPushButton*>(button);
+        });
+
+        layout->addWidget(buttonBox);
+
+        dialog->exec();
+
+        bool result = false;
+        if (clickedButton == saveBtn) {
+            result = onSave();  // 保存
+        } else if (clickedButton == discardBtn) {
+            result = true;      // 不保存
+        } else {
+            result = false;     // 取消
         }
+
+        delete dialog;
+        return result;
     }
     return true;
 }
@@ -647,17 +687,35 @@ void MainWindowDemo::loadFile(const QString &fileName)
 {
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, tr("警告"), 
-            tr("无法读取文件 %1:\n%2.")
-            .arg(fileName, file.errorString()));
+        QDialog *dialog = new QDialog(this);
+        dialog->setWindowTitle(tr("警告"));
+        dialog->setModal(true);
+        dialog->resize(400, 150);
+
+        QVBoxLayout *layout = new QVBoxLayout(dialog);
+
+        QLabel *label = new QLabel(tr("无法读取文件 %1:\n%2.")
+            .arg(fileName, file.errorString()), dialog);
+        label->setWordWrap(true);
+        label->setAlignment(Qt::AlignCenter);
+        layout->addWidget(label);
+
+        QDialogButtonBox *buttonBox = new QDialogButtonBox(dialog);
+        buttonBox->addButton(tr("确定"), QDialogButtonBox::AcceptRole);
+        layout->addWidget(buttonBox);
+
+        connect(buttonBox, &QDialogButtonBox::accepted, dialog, &QDialog::accept);
+
+        dialog->exec();
+        delete dialog;
         return;
     }
-    
+
     QTextStream in(&file);
     QApplication::setOverrideCursor(Qt::WaitCursor);
     m_textEdit->setPlainText(in.readAll());
     QApplication::restoreOverrideCursor();
-    
+
     setCurrentFile(fileName);
     m_statusLabel->setText(tr("文件加载成功"));
 }
@@ -671,7 +729,8 @@ bool MainWindowDemo::saveFile(const QString &fileName)
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QMessageBox::warning(this, tr("警告"), 
             tr("无法写入文件 %1:\n%2.")
-            .arg(fileName, file.errorString()));
+            .arg(fileName, file.errorString()),
+            QMessageBox::Ok);
         return false;
     }
     

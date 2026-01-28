@@ -82,7 +82,7 @@ private slots:
     // 文件菜单槽函数
     void onNew();
     void onOpen();
-    void onSave();
+    bool onSave();
     void onSaveAs();
     void onExport();
     void onPrint();

@@ -11,8 +11,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets PrintSupport REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets PrintSupport REQUIRED)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -39,7 +39,7 @@ else()
     endif()
 endif()
 
-target_link_libraries(Chapter07_MainWindow PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(Chapter07_MainWindow PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::PrintSupport)
 
 set_target_properties(Chapter07_MainWindow PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
