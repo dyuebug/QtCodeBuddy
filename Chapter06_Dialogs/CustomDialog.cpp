@@ -4,6 +4,17 @@
  */
 
 #include "CustomDialog.h"
+#include <QFormLayout>
+#include <QDialogButtonBox>
+#include <QComboBox>
+#include <QSpinBox>
+#include <QTextEdit>
+#include <QCheckBox>
+#include <QLineEdit>
+#include <QLabel>
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QDialog>
 
 CustomDialog::CustomDialog(QWidget *parent)
     : QDialog(parent)
@@ -98,7 +109,25 @@ void CustomDialog::setupUi()
     connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
     connect(helpButton, &QPushButton::clicked, [this]() {
-        QMessageBox::information(this, "帮助", "请填写所有必要信息并同意协议。");
+        QDialog *helpDialog = new QDialog(this);
+        helpDialog->setWindowTitle("帮助");
+        helpDialog->setModal(true);
+        helpDialog->resize(400, 150);
+        
+        QVBoxLayout *layout = new QVBoxLayout(helpDialog);
+        
+        QLabel *label = new QLabel("请填写所有必要信息并同意协议。", helpDialog);
+        label->setWordWrap(true);
+        label->setAlignment(Qt::AlignCenter);
+        label->setStyleSheet("font-size: 14px; padding: 20px;");
+        layout->addWidget(label);
+        
+        QPushButton *okBtn = new QPushButton("确定", helpDialog);
+        connect(okBtn, &QPushButton::clicked, helpDialog, &QDialog::accept);
+        layout->addWidget(okBtn);
+        
+        helpDialog->exec();
+        delete helpDialog;
     });
 }
 

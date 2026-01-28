@@ -5,14 +5,19 @@
 
 #include "DialogDemo.h"
 #include "CustomDialog.h"
-#include <QMessageBox>
 #include <QFileDialog>
 #include <QColorDialog>
 #include <QFontDialog>
 #include <QInputDialog>
 #include <QProgressDialog>
+#include <QThread>
 #include <QTimer>
 #include <QApplication>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QPushButton>
+#include <QLabel>
+#include <QVBoxLayout>
 
 DialogDemo::DialogDemo(QWidget *parent)
     : QWidget(parent)

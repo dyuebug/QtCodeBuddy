@@ -24,7 +24,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
-
+#include <QMessageBox>
 /**
  * @class CustomDialog
  * @brief 一个自定义的用户信息对话框
