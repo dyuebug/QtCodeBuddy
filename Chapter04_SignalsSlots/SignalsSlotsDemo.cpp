@@ -5,6 +5,8 @@
 
 #include "SignalsSlotsDemo.h"
 #include <QMessageBox>
+#include <QTime>
+#include <QTimer>
 
 SignalsSlotsDemo::SignalsSlotsDemo(QWidget *parent)
     : QWidget(parent)
@@ -45,7 +47,7 @@ SignalsSlotsDemo::SignalsSlotsDemo(QWidget *parent)
 /**
  * @brief 设置主界面
  */
-void SignalsDemo::setupUi()
+void SignalsSlotsDemo::setupUi()
 {
     m_tabWidget = new QTabWidget(this);
     
@@ -75,7 +77,7 @@ void SignalsDemo::setupUi()
 /**
  * @brief 基本信号和槽连接演示
  */
-void SignalsDemo::setupBasicDemo(QWidget *parent)
+void SignalsSlotsDemo::setupBasicDemo(QWidget *parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(parent);
     
@@ -117,7 +119,7 @@ void SignalsDemo::setupBasicDemo(QWidget *parent)
 /**
  * @brief 参数传递演示
  */
-void SignalsDemo::setupParameterDemo(QWidget *parent)
+void SignalsSlotsDemo::setupParameterDemo(QWidget *parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(parent);
     
@@ -178,7 +180,7 @@ void SignalsDemo::setupParameterDemo(QWidget *parent)
 /**
  * @brief Lambda表达式作为槽演示
  */
-void SignalsDemo::setupLambdaDemo(QWidget *parent)
+void SignalsSlotsDemo::setupLambdaDemo(QWidget *parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(parent);
     
@@ -215,7 +217,7 @@ void SignalsDemo::setupLambdaDemo(QWidget *parent)
 /**
  * @brief 自定义信号演示
  */
-void SignalsDemo::setupCustomSignalDemo(QWidget *parent)
+void SignalsSlotsDemo::setupCustomSignalDemo(QWidget *parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(parent);
     
@@ -231,20 +233,20 @@ void SignalsDemo::setupCustomSignalDemo(QWidget *parent)
     
     controlLayout->addWidget(m_incBtn);
     controlLayout->addWidget(m_decBtn);
-    
+
     // 设置值
-    QHBoxLayout *setLayout = new QHBoxLayout();
+    QHBoxLayout *setValueLayout = new QHBoxLayout();
     m_counterSpinBox = new QSpinBox(parent);
     m_counterSpinBox->setRange(-100, 100);
     m_counterSpinBox->setValue(0);
     m_setBtn = new QPushButton("设置值", parent);
-    
-    setLayout->addWidget(new QLabel("设置值为:"));
-    setLayout->addWidget(m_counterSpinBox);
-    setLayout->addWidget(m_setBtn);
-    
+
+    setValueLayout->addWidget(new QLabel("设置值为:"));
+    setValueLayout->addWidget(m_counterSpinBox);
+    setValueLayout->addWidget(m_setBtn);
+
     mainLayout->addWidget(controlGroup);
-    mainLayout->addLayout(setLayout);
+    mainLayout->addLayout(setValueLayout);
     
     // 显示区
     QGroupBox *displayGroup = new QGroupBox("计数器显示", parent);
@@ -276,7 +278,7 @@ void SignalsDemo::setupCustomSignalDemo(QWidget *parent)
 /**
  * @brief 多重连接演示
  */
-void SignalsDemo::setupMultipleDemo(QWidget *parent)
+void SignalsSlotsDemo::setupMultipleDemo(QWidget *parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(parent);
     
@@ -312,16 +314,16 @@ void SignalsDemo::setupMultipleDemo(QWidget *parent)
 /**
  * @brief 连接所有信号和槽
  */
-void SignalsDemo::connectSignals()
+void SignalsSlotsDemo::connectSignals()
 {
     // ========== 基本演示 ==========
-    connect(m_basicButton, &QPushButton::clicked, this, &SignalsDemo::onBasicButtonClicked);
-    connect(m_checkbox, &QCheckBox::stateChanged, this, &SignalsDemo::onCheckboxStateChanged);
+    connect(m_basicButton, &QPushButton::clicked, this, &SignalsSlotsDemo::onBasicButtonClicked);
+    connect(m_checkbox, &QCheckBox::checkStateChanged, this, &SignalsSlotsDemo::onCheckboxStateChanged);
     
     connect(m_disconnectBtn, &QPushButton::clicked, [this]() {
         // 断开连接的示例
         bool disconnected = disconnect(m_basicButton, &QPushButton::clicked, 
-                                        this, &SignalsDemo::onBasicButtonClicked);
+                                        this, &SignalsSlotsDemo::onBasicButtonClicked);
         if (disconnected) {
             m_basicLabel->setText("连接已断开！按钮点击将不再触发槽函数。");
             addLog("断开了按钮的clicked信号与槽的连接");
@@ -331,15 +333,15 @@ void SignalsDemo::connectSignals()
     // ========== 参数传递演示 ==========
     // SpinBox和Slider双向同步
     connect(m_spinBox, QOverload<int>::of(&QSpinBox::valueChanged), 
-            this, &SignalsDemo::onSpinBoxChanged);
+            this, &SignalsSlotsDemo::onSpinBoxChanged);
     connect(m_slider, &QSlider::valueChanged, 
-            this, &SignalsDemo::onSliderChanged);
+            this, &SignalsSlotsDemo::onSliderChanged);
     
     // 两个文本框双向同步
     connect(m_lineEdit1, &QLineEdit::textChanged, 
-            this, &SignalsDemo::onTextChanged);
+            this, &SignalsSlotsDemo::onTextChanged);
     connect(m_lineEdit2, &QLineEdit::textChanged, 
-            this, &SignalsDemo::onTextChanged2);
+            this, &SignalsSlotsDemo::onTextChanged2);
     
     // ========== Lambda演示 ==========
     // Lambda捕获this
@@ -357,11 +359,11 @@ void SignalsDemo::connectSignals()
     
     // ========== 自定义信号演示 ==========
     connect(m_counter, &Counter::valueChanged, 
-            this, &SignalsDemo::onCounterValueChanged);
+            this, &SignalsSlotsDemo::onCounterValueChanged);
     connect(m_counter, &Counter::valueReached, 
-            this, &SignalsDemo::onCounterValueReached);
+            this, &SignalsSlotsDemo::onCounterValueReached);
     connect(m_counter, &Counter::exceededThreshold, 
-            this, &SignalsDemo::onCounterExceededThreshold);
+            this, &SignalsSlotsDemo::onCounterExceededThreshold);
     
     connect(m_incBtn, &QPushButton::clicked, [this]() {
         m_counter->increment();
@@ -376,22 +378,22 @@ void SignalsDemo::connectSignals()
     });
     
     // ========== 多重连接演示 ==========
-    // 三个发送者连接到同一个槽
-    connect(m_sender1, &QPushButton::clicked, this, &SignalsDemo::onSender1Clicked);
-    connect(m_sender2, &QPushButton::clicked, this, &SignalsDemo::onSender2Clicked);
-    connect(m_sender3, &QPushButton::clicked, this, &SignalsDemo::onSender3Clicked);
-    
+    // 三个发送者都连接到同一个公共槽（演示多个信号连接一个槽）
+    connect(m_sender1, &QPushButton::clicked, this, &SignalsSlotsDemo::onCommonSlotClicked);
+    connect(m_sender2, &QPushButton::clicked, this, &SignalsSlotsDemo::onCommonSlotClicked);
+    connect(m_sender3, &QPushButton::clicked, this, &SignalsSlotsDemo::onCommonSlotClicked);
+
     // 一个信号连接到多个槽（使用Lambda）
     connect(m_commonBtn, &QPushButton::clicked, [this]() {
         m_multiLabel->setText("槽1: 按钮被点击了！");
         addLog("执行槽1: 显示消息");
     });
-    
+
     connect(m_commonBtn, &QPushButton::clicked, [this]() {
         QMessageBox::information(this, "提示", "这是槽2弹出的对话框！");
         addLog("执行槽2: 弹出对话框");
     });
-    
+
     connect(m_commonBtn, &QPushButton::clicked, [this]() {
         m_commonBtn->setText("再次点击");
         addLog("执行槽3: 修改按钮文本");
@@ -401,7 +403,7 @@ void SignalsDemo::connectSignals()
 /**
  * @brief 添加日志
  */
-void SignalsDemo::addLog(const QString &message)
+void SignalsSlotsDemo::addLog(const QString &message)
 {
     QString timestamp = QTime::currentTime().toString("hh:mm:ss.zzz");
     m_logTextEdit->append(QString("[%1] %2").arg(timestamp, message));
@@ -410,7 +412,7 @@ void SignalsDemo::addLog(const QString &message)
 /**
  * @brief 基本按钮点击槽
  */
-void SignalsDemo::onBasicButtonClicked()
+void SignalsSlotsDemo::onBasicButtonClicked()
 {
     m_basicLabel->setText("按钮被点击了！信号和槽机制工作正常。");
     addLog("收到按钮clicked信号，执行槽函数");
@@ -419,7 +421,7 @@ void SignalsDemo::onBasicButtonClicked()
 /**
  * @brief 复选框状态改变槽
  */
-void SignalsDemo::onCheckboxStateChanged(int state)
+void SignalsSlotsDemo::onCheckboxStateChanged(Qt::CheckState state)
 {
     QString status = (state == Qt::Checked) ? "已选中" : "未选中";
     m_basicLabel->setText(QString("复选框状态: %1").arg(status));
@@ -429,7 +431,7 @@ void SignalsDemo::onCheckboxStateChanged(int state)
 /**
  * @brief SpinBox值改变槽
  */
-void SignalsDemo::onSpinBoxChanged(int value)
+void SignalsSlotsDemo::onSpinBoxChanged(int value)
 {
     // 阻止信号循环：设置值前先断开连接，设置后再重新连接
     m_slider->blockSignals(true);
@@ -442,7 +444,7 @@ void SignalsDemo::onSpinBoxChanged(int value)
 /**
  * @brief Slider值改变槽
  */
-void SignalsDemo::onSliderChanged(int value)
+void SignalsSlotsDemo::onSliderChanged(int value)
 {
     // 阻止信号循环
     m_spinBox->blockSignals(true);
@@ -455,7 +457,7 @@ void SignalsDemo::onSliderChanged(int value)
 /**
  * @brief 文本框1文本改变槽
  */
-void SignalsDemo::onTextChanged(const QString &text)
+void SignalsSlotsDemo::onTextChanged(const QString &text)
 {
     m_lineEdit2->blockSignals(true);
     m_lineEdit2->setText(text);
@@ -467,7 +469,7 @@ void SignalsDemo::onTextChanged(const QString &text)
 /**
  * @brief 文本框2文本改变槽
  */
-void SignalsDemo::onTextChanged2(const QString &text)
+void SignalsSlotsDemo::onTextChanged2(const QString &text)
 {
     m_lineEdit1->blockSignals(true);
     m_lineEdit1->setText(text);
@@ -479,7 +481,7 @@ void SignalsDemo::onTextChanged2(const QString &text)
 /**
  * @brief 计数器值改变槽
  */
-void SignalsDemo::onCounterValueChanged(int value)
+void SignalsSlotsDemo::onCounterValueChanged(int value)
 {
     m_counterLabel->setText(QString("当前值: %1").arg(value));
     addLog(QString("计数器值改变: %1").arg(value));
@@ -488,7 +490,7 @@ void SignalsDemo::onCounterValueChanged(int value)
 /**
  * @brief 计数器值达到特定值槽
  */
-void SignalsDemo::onCounterValueReached(int value)
+void SignalsSlotsDemo::onCounterValueReached(int value)
 {
     m_counterLabel->setStyleSheet(
         "font-size: 24px; font-weight: bold; padding: 20px; color: red; background-color: #ffebee;"
@@ -504,7 +506,7 @@ void SignalsDemo::onCounterValueReached(int value)
 /**
  * @brief 计数器超过阈值槽
  */
-void SignalsDemo::onCounterExceededThreshold(int value, int threshold)
+void SignalsSlotsDemo::onCounterExceededThreshold(int value, int threshold)
 {
     QMessageBox::warning(this, "警告", 
         QString("计数器值 %1 已超过阈值 %2！").arg(value).arg(threshold));
@@ -514,7 +516,7 @@ void SignalsDemo::onCounterExceededThreshold(int value, int threshold)
 /**
  * @brief 发送者1点击槽
  */
-void SignalsDemo::onSender1Clicked()
+void SignalsSlotsDemo::onSender1Clicked()
 {
     m_multiLabel->setText("发送者1被点击了");
     addLog("收到sender1的clicked信号");
@@ -523,7 +525,7 @@ void SignalsDemo::onSender1Clicked()
 /**
  * @brief 发送者2点击槽
  */
-void SignalsDemo::onSender2Clicked()
+void SignalsSlotsDemo::onSender2Clicked()
 {
     m_multiLabel->setText("发送者2被点击了");
     addLog("收到sender2的clicked信号");
@@ -532,8 +534,22 @@ void SignalsDemo::onSender2Clicked()
 /**
  * @brief 发送者3点击槽
  */
-void SignalsDemo::onSender3Clicked()
+void SignalsSlotsDemo::onSender3Clicked()
 {
     m_multiLabel->setText("发送者3被点击了");
     addLog("收到sender3的clicked信号");
+}
+
+/**
+ * @brief 公共槽函数 - 多个发送者连接到此槽
+ */
+void SignalsSlotsDemo::onCommonSlotClicked()
+{
+    // 获取发送者对象
+    QPushButton *senderBtn = qobject_cast<QPushButton*>(sender());
+    if (senderBtn) {
+        QString senderName = senderBtn->text();
+        m_multiLabel->setText(QString("%1 触发了公共槽函数").arg(senderName));
+        addLog(QString("公共槽函数被 %1 触发").arg(senderName));
+    }
 }

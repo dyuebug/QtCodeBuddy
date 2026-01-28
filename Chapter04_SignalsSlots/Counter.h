@@ -49,13 +49,14 @@ public:
      */
     void setValue(int value);
 
+public:
 public slots:
     /**
      * @brief 公共槽函数 - 增加计数值
      * @param delta 增加的量，默认为1
      */
     void increment(int delta = 1);
-    
+
     /**
      * @brief 公共槽函数 - 减少计数值
      * @param delta 减少的量，默认为1
@@ -66,19 +67,19 @@ signals:
     /**
      * @brief 信号 - 计数值改变
      * @param newValue 新的计数值
-     * 
+     *
      * 当计数值改变时发射此信号
      */
     void valueChanged(int newValue);
-    
+
     /**
      * @brief 信号 - 计数值达到特定值
      * @param value 达到的值
-     * 
+     *
      * 当计数值达到特定值时发射此信号
      */
     void valueReached(int value);
-    
+
     /**
      * @brief 信号 - 计数值超过阈值
      * @param value 当前值

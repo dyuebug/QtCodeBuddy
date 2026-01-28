@@ -30,6 +30,7 @@
 #include <QHBoxLayout>
 #include <QGroupBox>
 #include <QTabWidget>
+#include <QCheckBox>
 
 #include "Counter.h"
 
@@ -52,31 +53,31 @@ private:
     void setupCustomSignalDemo(QWidget *parent);
     void setupMultipleDemo(QWidget *parent);
     void connectSignals();
-    
+
     // 辅助函数：添加日志
     void addLog(const QString &message);
 
-private slots:
+public slots:
     // 基本演示槽函数
     void onBasicButtonClicked();
-    void onCheckboxStateChanged(int state);
-    
+    void onCheckboxStateChanged(Qt::CheckState state);
+
     // 参数传递演示槽函数
     void onSpinBoxChanged(int value);
     void onSliderChanged(int value);
     void onTextChanged(const QString &text);
     void onTextChanged2(const QString &text);
-    
+
     // 自定义信号演示槽函数
     void onCounterValueChanged(int value);
     void onCounterValueReached(int value);
     void onCounterExceededThreshold(int value, int threshold);
-    
+
     // 多重连接演示槽函数
     void onSender1Clicked();
     void onSender2Clicked();
     void onSender3Clicked();
-    void onCommonSlotClicked();
+    void onCommonSlotClicked();  // 公共槽函数，多个发送者连接到此槽
 
 private:
     QTabWidget *m_tabWidget;

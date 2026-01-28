@@ -38,7 +38,7 @@
  * 
  * 7. Lambda表达式作为槽：
  *    - 可以内联定义，无需单独声明
- *    - 语法：connect(sender, &signal, [](){ /* lambda code */ });
+ *    - 语法：connect(sender, &signal, [](){ lambda code *});
  *    - 可以捕获外部变量：[this](){} 或 [variable](){} 或 [&variable](){}
  *    - 适合简单的、一次性的操作
  * 
