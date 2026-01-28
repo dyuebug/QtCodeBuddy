@@ -653,12 +653,25 @@ bool MainWindowDemo::maybeSave()
         QDialogButtonBox *buttonBox = new QDialogButtonBox(dialog);
         QPushButton *saveBtn = buttonBox->addButton(tr("保存"), QDialogButtonBox::AcceptRole);
         QPushButton *discardBtn = buttonBox->addButton(tr("不保存"), QDialogButtonBox::DestructiveRole);
-        buttonBox->addButton(tr("取消"), QDialogButtonBox::RejectRole);
+        QPushButton *cancelBtn = buttonBox->addButton(tr("取消"), QDialogButtonBox::RejectRole);
 
-        // 连接信号来获取被点击的按钮
-        QPushButton *clickedButton = nullptr;
-        connect(buttonBox, &QDialogButtonBox::clicked, [&](QAbstractButton *button) {
-            clickedButton = qobject_cast<QPushButton*>(button);
+        // 使用枚举来记录用户的选择
+        enum UserChoice { Save, Discard, Cancel, None };
+        UserChoice userChoice = None;
+
+        connect(saveBtn, &QPushButton::clicked, [&]() {
+            userChoice = Save;
+            dialog->accept();
+        });
+
+        connect(discardBtn, &QPushButton::clicked, [&]() {
+            userChoice = Discard;
+            dialog->accept();
+        });
+
+        connect(cancelBtn, &QPushButton::clicked, [&]() {
+            userChoice = Cancel;
+            dialog->reject();
         });
 
         layout->addWidget(buttonBox);
@@ -666,12 +679,17 @@ bool MainWindowDemo::maybeSave()
         dialog->exec();
 
         bool result = false;
-        if (clickedButton == saveBtn) {
-            result = onSave();  // 保存
-        } else if (clickedButton == discardBtn) {
-            result = true;      // 不保存
-        } else {
-            result = false;     // 取消
+        switch (userChoice) {
+            case Save:
+                result = onSave();  // 保存
+                break;
+            case Discard:
+                result = true;      // 不保存
+                break;
+            case Cancel:
+            default:
+                result = false;     // 取消
+                break;
         }
 
         delete dialog;
