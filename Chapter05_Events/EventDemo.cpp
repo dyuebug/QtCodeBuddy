@@ -4,6 +4,7 @@
  */
 
 #include "EventDemo.h"
+#include <QApplication>
 #include <QResizeEvent>
 #include <QMoveEvent>
 #include <QCloseEvent>
@@ -122,7 +123,7 @@ void EventDemo::setupMouseEventDemo(QWidget *parent)
 void EventDemo::setupKeyboardEventDemo(QWidget *parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(parent);
-    
+
     QLabel *infoLabel = new QLabel(
         "请在下方输入框中按任意键，将显示键盘事件信息。\n"
         "按ESC键可以清空日志。", parent
@@ -130,16 +131,18 @@ void EventDemo::setupKeyboardEventDemo(QWidget *parent)
     infoLabel->setWordWrap(true);
     infoLabel->setStyleSheet("background-color: #fffacd; padding: 10px; border-radius: 5px;");
     mainLayout->addWidget(infoLabel);
-    
+
     m_keyLineEdit = new QLineEdit(parent);
     m_keyLineEdit->setPlaceholderText("在这里输入或按键...");
+    // 为输入框安装事件过滤器，捕获键盘事件
+    m_keyLineEdit->installEventFilter(this);
     mainLayout->addWidget(m_keyLineEdit);
-    
+
     m_keyLog = new QTextEdit(parent);
     m_keyLog->setReadOnly(true);
     m_keyLog->setMaximumHeight(300);
     mainLayout->addWidget(m_keyLog);
-    
+
     m_clearKeyBtn = new QPushButton("清空日志", parent);
     mainLayout->addWidget(m_clearKeyBtn);
 }
@@ -502,10 +505,37 @@ void EventDemo::onFilterCheckboxChanged(int state)
  */
 bool EventDemo::eventFilter(QObject *watched, QEvent *event)
 {
+    // 处理keyLineEdit的键盘事件（用于键盘事件演示）
+    if (watched == m_keyLineEdit && event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+
+        QString keyText = keyEvent->text();
+        int keyCode = keyEvent->key();
+        QString keyName = QKeySequence(keyCode).toString();
+
+        QString modifiers;
+        if (keyEvent->modifiers() & Qt::ControlModifier) modifiers += "Ctrl+";
+        if (keyEvent->modifiers() & Qt::AltModifier) modifiers += "Alt+";
+        if (keyEvent->modifiers() & Qt::ShiftModifier) modifiers += "Shift+";
+
+        QString message = QString("按键: %1%2 | 键码: %3 | 文本: '%4'")
+            .arg(modifiers).arg(keyName).arg(keyCode).arg(keyText);
+
+        addLog(message);
+
+        // ESC键清空日志
+        if (keyCode == Qt::Key_Escape) {
+            m_keyLog->clear();
+        }
+
+        // 让事件继续传递，以便QLineEdit正常处理
+        return QWidget::eventFilter(watched, event);
+    }
+
     // 过滤filteredEdit的键盘事件
     if (watched == m_filteredEdit && event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
-        
+
         // 如果勾选了过滤，且按下的是数字键
         if (m_filterCheckbox->isChecked()) {
             if (keyEvent->key() >= Qt::Key_0 && keyEvent->key() <= Qt::Key_9) {
@@ -514,10 +544,10 @@ bool EventDemo::eventFilter(QObject *watched, QEvent *event)
                 return true;  // 返回true表示事件已被处理，不再传递
             }
         }
-        
+
         m_filterLabel->setText(QString("按键: %1 (未被过滤)").arg(keyEvent->text()));
     }
-    
+
     // 调用基类的事件过滤器
     return QWidget::eventFilter(watched, event);
 }

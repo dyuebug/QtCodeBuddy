@@ -50,9 +50,12 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
     void moveEvent(QMoveEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
-    
+
     // 键盘事件
     void keyPressEvent(QKeyEvent *event) override;
+
+    // 事件过滤器
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
     void setupUi();
