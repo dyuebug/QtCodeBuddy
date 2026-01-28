@@ -6,6 +6,7 @@
 #include "CustomWidgetDemo.h"
 #include <QMessageBox>
 #include <QRandomGenerator>
+#include <QTime>
 
 CustomWidgetDemo::CustomWidgetDemo(QWidget *parent)
     : QWidget(parent)
@@ -266,7 +267,7 @@ void CustomWidgetDemo::connectSignals()
         m_progressSlider->setValue(value);
     });
     
-    connect(m_animationCheckBox, &QCheckBox::stateChanged, this, &CustomWidgetDemo::onAnimationEnabledChanged);
+    connect(m_animationCheckBox, &QCheckBox::checkStateChanged, this, &CustomWidgetDemo::onAnimationEnabledChanged);
     connect(m_startAnimationBtn, &QPushButton::clicked, this, &CustomWidgetDemo::onStartProgressAnimation);
     connect(m_stopAnimationBtn, &QPushButton::clicked, this, &CustomWidgetDemo::onStopProgressAnimation);
     connect(m_resetProgressBtn, &QPushButton::clicked, this, &CustomWidgetDemo::onResetProgress);
@@ -397,7 +398,7 @@ void CustomWidgetDemo::onProgressRangeChanged()
 /**
  * @brief 动画启用状态改变
  */
-void CustomWidgetDemo::onAnimationEnabledChanged(int state)
+void CustomWidgetDemo::onAnimationEnabledChanged(Qt::CheckState state)
 {
     bool enabled = (state == Qt::Checked);
     m_progressBar->setAnimationEnabled(enabled);

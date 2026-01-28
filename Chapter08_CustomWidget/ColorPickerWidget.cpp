@@ -5,6 +5,7 @@
 
 #include "ColorPickerWidget.h"
 #include <cmath>
+#include <QPainterPath>
 
 ColorPickerWidget::ColorPickerWidget(QWidget *parent)
     : QWidget(parent)

@@ -62,7 +62,7 @@ private slots:
     void onResetProgress();
     void onProgressValueSliderChanged(int value);
     void onProgressRangeChanged();
-    void onAnimationEnabledChanged(int state);
+    void onAnimationEnabledChanged(Qt::CheckState state);
     void onCustomPropertiesChanged();
 
 private:
