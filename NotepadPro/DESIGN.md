@@ -17,8 +17,9 @@ NotepadPro 是一个基于 Qt6 的个人笔记本应用，旨在将 Qt6 的核�
 |------|------|
 | 笔记管理 | 创建、编辑、删除、重命名笔记 |
 | 分类管理 | 创建、编辑、删除分类，支持颜色标记 |
-| 富文本编辑 | 字体、颜色、格式、对齐方式 |
-| 搜索功能 | 延迟搜索，支持标题和内容搜索 |
+| 分类-笔记关联 | 笔记归属分类，按分类筛选笔记 |
+| 富文本编辑 | 粗体、斜体、下划线、删除线、颜色、对齐 |
+| 搜索功能 | 延迟搜索（防抖动），支持标题和内容搜索 |
 | 数据持久化 | JSON 文件存储，自动保存 |
 
 ---
@@ -119,7 +120,36 @@ public:
 };
 ```
 
-### 3.3 MainWindow 类（主窗口）
+### 3.3 分类-笔记关联机制
+
+**设计思路：**
+- 每个笔记通过 `categoryId` 字段关联到分类
+- 分类树提供"全部笔记"选项（空 ID）显示所有笔记
+- 选择分类时自动过滤笔记列表
+
+```cpp
+// MainWindow::onCategorySelected - 分类选择处理
+void MainWindow::onCategorySelected(const QString &categoryId)
+{
+    m_currentCategoryId = categoryId;
+    m_noteList->clear();
+
+    QList<Note*> notes;
+    if (categoryId.isEmpty()) {
+        // "全部笔记" - 显示所有
+        notes = NoteManager::instance()->getAllNotes();
+    } else {
+        // 按分类过滤
+        notes = NoteManager::instance()->getNotesByCategory(categoryId);
+    }
+
+    for (Note *note : notes) {
+        m_noteList->addNote(note);
+    }
+}
+```
+
+### 3.4 MainWindow 类（主窗口）
 
 **QMainWindow 架构组成：**
 
@@ -245,28 +275,77 @@ void MainWindow::loadSettings() {
 }
 ```
 
-#### 4.2.6 富文本编辑
+#### 4.2.6 富文本编辑器工具栏
+
+**问题与解决方案：**
+- QToolBar 会被 QMainWindow 自动吸收到主工具栏区域
+- 解决：使用 QWidget + QHBoxLayout + QPushButton 替代 QToolBar
 
 ```cpp
-// 应用格式到选中文本
+// 创建工具栏容器（使用 QWidget 而非 QToolBar）
+m_toolBarWidget = new QWidget(this);
+m_toolBarLayout = new QHBoxLayout(m_toolBarWidget);
+
+// 格式按钮 - 点击触发 Action
+m_boldBtn = new QPushButton(tr("B"), m_toolBarWidget);
+m_boldBtn->setCheckable(true);
+connect(m_boldBtn, &QPushButton::clicked, m_boldAction, &QAction::trigger);
+```
+
+**按钮状态同步：**
+```cpp
+// 光标位置变化时同步按钮选中状态
+void RichTextEditor::onCurrentCharFormatChanged(const QTextCharFormat &format)
+{
+    m_boldBtn->blockSignals(true);  // 防止循环触发
+    m_boldBtn->setChecked(format.fontWeight() == QFont::Bold);
+    m_boldBtn->blockSignals(false);
+}
+```
+
+#### 4.2.7 文本格式应用
+
+```cpp
+// 应用格式到选中文本或当前单词
 void RichTextEditor::mergeFormatOnWordOrSelection(const QTextCharFormat &format) {
     QTextCursor cursor = m_textEdit->textCursor();
     if (!cursor.hasSelection()) {
         cursor.select(QTextCursor::WordUnderCursor);
     }
     cursor.mergeCharFormat(format);
+    m_textEdit->mergeCurrentCharFormat(format);
 }
 ```
 
-#### 4.2.7 延迟搜索 (QTimer)
+#### 4.2.8 延迟搜索 (QTimer)
 
 ```cpp
-// 用户输入后延迟触发搜索，避免频繁查询
+// 用户输入后延迟触发搜索，避免频繁查询（防抖动）
 void SearchWidget::onTextChanged(const QString &text) {
     m_searchTimer->stop();
     if (!text.isEmpty()) {
         m_searchTimer->start(m_searchDelay);  // 300ms 延迟
     }
+}
+```
+
+#### 4.2.9 事件过滤器 (eventFilter)
+
+```cpp
+// 拦截子控件的键盘事件
+bool SearchWidget::eventFilter(QObject *watched, QEvent *event) {
+    if (watched == m_searchEdit && event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        if (keyEvent->key() == Qt::Key_Escape) {
+            clearSearch();  // Escape 清除搜索
+            return true;
+        }
+        if (keyEvent->key() == Qt::Key_Return) {
+            emit searchRequested(m_searchEdit->text());  // Enter 立即搜索
+            return true;
+        }
+    }
+    return QWidget::eventFilter(watched, event);
 }
 ```
 
@@ -276,21 +355,20 @@ void SearchWidget::onTextChanged(const QString &text) {
 
 ### 5.1 环境要求
 
-- Qt 5.14.2 或更高版本
-- CMake 3.10+
-- MinGW 32位编译器（与 Qt 版本匹配）
+- Qt 6.x（推荐 Qt 6.5+）
+- CMake 3.16+
+- MinGW 64位 或 MSVC 编译器
 
 ### 5.2 编译步骤
 
 ```bash
 cd NotepadPro
 
-# 配置（使用 Qt 自带的 MinGW）
-cmake -B build -G "MinGW Makefiles" \
-  -DCMAKE_CXX_COMPILER="<Qt路径>/Tools/mingw730_32/bin/g++.exe"
+# 配置
+cmake -B build -G "MinGW Makefiles"
 
 # 编译
-cmake --build build
+cmake --build build --config Debug
 ```
 
 ### 5.3 运行
@@ -342,11 +420,13 @@ ClassName::ClassName(QWidget *parent)
 
 本项目通过实现一个完整的笔记本应用，系统性地展示了 Qt6 的核心知识点：
 
-1. **元对象系统** - Q_OBJECT、Q_PROPERTY
-2. **信号槽机制** - 新式语法、Lambda 连接
-3. **主窗口架构** - 菜单、工具栏、停靠窗口
-4. **数据持久化** - JSON 序列化、QSettings
-5. **自定义控件** - 继承、事件处理
-6. **对话框** - 模态对话框、标准对话框
+1. **元对象系统** - Q_OBJECT、Q_PROPERTY、信号槽
+2. **信号槽机制** - 新式语法、Lambda 连接、信号转发
+3. **主窗口架构** - 菜单、工具栏、停靠窗口、splitDockWidget
+4. **数据持久化** - JSON 序列化、QSettings 配置存储
+5. **自定义控件** - QWidget 组合、事件过滤器
+6. **对话框** - 模态对话框、QInputDialog
+7. **富文本编辑** - QTextEdit、QTextCharFormat、QTextCursor
+8. **定时器应用** - QTimer 实现防抖动搜索
 
-通过学习本项目，可以掌握 Qt 应用开发的完整流程。
+通过学习本项目，可以掌握 Qt6 应用开发的完整流程。
