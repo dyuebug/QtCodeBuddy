@@ -44,3 +44,5 @@
 .qtcreator/
 build/
 .spec-workflow/
+.serena/
+
