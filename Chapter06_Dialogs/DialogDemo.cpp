@@ -85,9 +85,17 @@ void DialogDemo::setupUi()
     m_tabWidget->addTab(inputTab, "输入对话框");
     m_tabWidget->addTab(progressTab, "进度对话框");
     m_tabWidget->addTab(customTab, "自定义对话框");
-    
+
+    // 创建日志输出区域
+    m_logTextEdit = new QTextEdit(this);
+    m_logTextEdit->setReadOnly(true);
+    m_logTextEdit->setMaximumHeight(120);
+    m_logTextEdit->setPlaceholderText("操作日志将显示在这里...");
+
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(m_tabWidget);
+    mainLayout->addWidget(new QLabel("操作日志:", this));
+    mainLayout->addWidget(m_logTextEdit);
 }
 
 /**
