@@ -6,6 +6,7 @@
 #include "HelloWorld.h"
 #include <QMessageBox>
 #include <QApplication>
+#include <QDateTime>
 
 /**
  * @brief HelloWorld构造函数
@@ -51,7 +52,17 @@ void HelloWorld::setupUi()
     m_button = new QPushButton("点击我", this);
     m_button->setMinimumHeight(40);  // 设置最小高度
     m_button->setStyleSheet("font-size: 14px;");
-    
+
+    // 3.创建获取当前时间按钮
+    m_button_time = new QPushButton("点击获取当前时间", this);
+    m_button_time->setMinimumHeight(40);
+    m_button_time->setStyleSheet("font-size: 14px;");
+
+    // 4.创建获取当前时间标签
+    m_label_time = new QLabel();
+    m_label->setAlignment(Qt::AlignCenter);  // 设置文本居中对齐
+    m_label->setStyleSheet("font-size: 18px; font-weight: bold; color: #333;");
+
     // 3. 创建布局管理器
     // QVBoxLayout用于垂直排列部件
     m_layout = new QVBoxLayout(this);
@@ -60,7 +71,9 @@ void HelloWorld::setupUi()
     // addWidget()会将部件添加到布局，布局会自动管理部件的位置和大小
     m_layout->addWidget(m_label);
     m_layout->addWidget(m_button);
-    
+    m_layout->addWidget(m_button_time);
+    m_layout->addWidget(m_label_time);
+
     // 5. 设置布局的间距
     m_layout->setSpacing(20);        // 部件之间的间距
     m_layout->setContentsMargins(30, 30, 30, 30);  // 边距（左、上、右、下）
@@ -77,6 +90,7 @@ void HelloWorld::connectSignals()
     // 方式1：使用成员函数指针（Qt6推荐）
     // 当按钮被点击时，调用onButtonClicked()槽函数
     connect(m_button, &QPushButton::clicked, this, &HelloWorld::onButtonClicked);
+    connect(m_button_time, &QPushButton::clicked, this, &HelloWorld::onButtonTimeClicked);
 }
 
 /**
@@ -100,4 +114,10 @@ void HelloWorld::onButtonClicked()
     } else if (clickCount == 5) {
         QMessageBox::information(this, "恭喜", "你已经点击了5次！\n继续探索Qt6吧！");
     }
+}
+
+void HelloWorld::onButtonTimeClicked()
+{
+    auto currentTime = QDateTime::currentDateTime().toString();
+    m_label_time->setText(currentTime);
 }

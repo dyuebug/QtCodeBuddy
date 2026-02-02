@@ -61,11 +61,14 @@ private slots:
      * Qt6推荐使用函数指针语法连接信号和槽
      */
     void onButtonClicked();
+    void onButtonTimeClicked();
 
 private:
     QLabel *m_label;      ///< 标签部件，用于显示文本
     QPushButton *m_button;///< 按钮部件
     QVBoxLayout *m_layout;///< 垂直布局管理器
+    QLabel *m_label_time;      ///< 标签部件，用于显示文本-time
+    QPushButton *m_button_time; //当前时间
 };
 
 #endif // HELLOWORLD_H
