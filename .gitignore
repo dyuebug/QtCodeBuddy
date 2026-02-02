@@ -47,3 +47,4 @@ build/
 .serena/
 
 .ace-tool/
+.claude/
